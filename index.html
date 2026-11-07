@@ -3,66 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Renda Fácil</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9893581797620249" crossorigin="anonymous"></script>
+<title>Click Master - Jogue de Verdade!</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-  body{background:#0a8a3f;color:#fff;text-align:center;padding:20px;padding-bottom:40px}
-  .card{background:#fff;color:#222;border-radius:20px;padding:20px;margin:15px auto;max-width:400px;box-shadow:0 10px 25px rgba(0,0,0,.2)}
-  .saldo{font-size:42px;font-weight:bold;color:#0a8a3f}
-  .nivel{background:#ffe600;color:#000;padding:6px 14px;border-radius:20px;font-weight:bold;display:inline-block;margin:8px 0}
-  button{width:100%;padding:15px;border:none;border-radius:12px;font-size:17px;font-weight:bold;margin-top:10px;cursor:pointer}
-  .btn-ganhar{background:#0a8a3f;color:#fff;font-size:20px}
-  .btn-convidar{background:#25D366;color:#fff}
-  .btn-sacar{background:#ffcc00;color:#000}
-  input{width:100%;padding:13px;border-radius:10px;border:1px solid #ccc;margin-top:10px;font-size:16px}
-  .aviso{font-size:13px;color:#666;margin-top:10px}
+  body { font-family: Arial; text-align: center; background: #1a1a2e; color: white; margin: 0; padding: 20px; }
+  .card { background: #16213e; padding: 20px; border-radius: 20px; max-width: 400px; margin: 0 auto; }
+  h1 { color: #ffd700; }
+  #pontos { font-size: 48px; font-weight: bold; color: #00ff88; }
+  #nivel { font-size: 20px; color: #ffd700; }
+  #barra { background: #333; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+  #progresso { background: linear-gradient(90deg, #00ff88, #ffd700); height: 100%; width: 0%; transition: 0.3s; }
+  #btnClick { width: 180px; height: 180px; border-radius: 50%; border: none; background: radial-gradient(circle, #ffd700, #ff6b00); font-size: 60px; cursor: pointer; margin: 20px 0; box-shadow: 0 10px 0 #a34a00; }
+  #btnClick:active { transform: scale(0.95); box-shadow: 0 5px 0 #a34a00; }
+  .upgrade { background: #0f3460; border: 2px solid #00ff88; color: white; padding: 12px; border-radius: 12px; width: 100%; margin: 5px 0; cursor: pointer; font-size: 16px; }
+  .upgrade:disabled { opacity: 0.5; }
+  .ranking { background: #0f3460; padding: 10px; border-radius: 12px; margin-top: 15px; }
 </style>
 </head>
 <body>
-<h1>💰 Renda Fácil</h1>
-<p>Jogue, suba de nível e divirta-se!</p>
 <div class="card">
-  <p>Seu Saldo</p>
-  <div class="saldo" id="saldo">R$ 0,00</div>
-  <div class="nivel" id="nivel">Nível 1 - Iniciante</div>
-  <p id="progresso">Faltam R$ 20 para sacar</p>
-  <button class="btn-ganhar" onclick="ganhar()">🤑 GANHAR R$ 1</button>
-  <button class="btn-convidar" onclick="convidar()">📲 CONVIDAR AMIGO + R$ 20</button>
-  <input id="pix" placeholder="Sua chave Pix (ex: seu e-mail)">
-  <button class="btn-sacar" onclick="sacar()">💸 SACAR</button>
-  <p class="aviso" id="msg"></p>
+  <h1>🏆 CLICK MASTER</h1>
+  <div id="nivel">Nível 1 - Iniciante</div>
+  <div id="pontos">0</div>
+  <div>PONTOS</div>
+  <div id="barra"><div id="progresso"></div></div>
+  <div id="falta">Faltam 100 pontos pro próximo nível</div>
+
+  <button id="btnClick" onclick="clicar()">👆</button>
+  <div id="porClique">+1 por clique</div>
+
+  <button class="upgrade" id="up1" onclick="comprar(1)">⚡ Clique Duplo - 50 pontos<br><small>Ganha +1 por clique</small></button>
+  <button class="upgrade" id="up2" onclick="comprar(2)">🔥 Super Clique - 200 pontos<br><small>Ganha +5 por clique</small></button>
+  <button class="upgrade" id="up3" onclick="comprar(3)">💎 Clique Diamante - 1000 pontos<br><small>Ganha +20 por clique</small></button>
+
+  <div class="ranking">
+    <b>🏅 SEU RECORDE</b><br>
+    <span id="recorde">Maior nível: 1</span><br>
+    <span id="totalCliques">Total de cliques: 0</span>
+  </div>
+  <p style="font-size:12px; opacity:0.7">Jogue, suba de nível e seja o mestre do clique!</p>
 </div>
-<div class="card">
-  <h3>🏆 Como funciona</h3>
-  <p style="text-align:left;margin-top:10px;line-height:1.6;font-size:15px">
-    - Clique em GANHAR para ganhar pontos<br>
-    - Convide amigos para ganhar bônus<br>
-    - Suba de nível e desbloqueie prêmios<br>
-    - O saque é apenas simulação do jogo
-  </p>
-  <p class="aviso">Este é um jogo para diversão. Os valores são pontos do jogo.</p>
-</div>
+
 <script>
-let saldo = parseFloat(localStorage.getItem('saldo') || 0);
+let pontos = parseInt(localStorage.getItem('pontos') || 0);
+let porClique = parseInt(localStorage.getItem('porClique') || 1);
+let cliques = parseInt(localStorage.getItem('cliques') || 0);
+let niveis = ["Iniciante","Aprendiz","Pro","Mestre","Lenda","Click Master"];
+
+function nivelAtual(){ return Math.floor(pontos/100)+1; }
+function nomeNivel(){ let n=nivelAtual(); if(n>6) return "Click Master 👑"; return niveis[Math.min(n-1,5)]; }
+
 function atualizar(){
-  document.getElementById('saldo').innerText = 'R$ ' + saldo.toFixed(2).replace('.',',');
-  let nivel = 'Nível 1 - Iniciante';
-  if(saldo >= 100) nivel = 'Nível 4 - Mestre 💎';
-  else if(saldo >= 50) nivel = 'Nível 3 - Pro 🔥';
-  else if(saldo >= 20) nivel = 'Nível 2 - Intermediário ⭐';
-  document.getElementById('nivel').innerText = nivel;
-  document.getElementById('progresso').innerText = saldo >= 20 ? 'Você já pode sacar!' : 'Faltam R$ ' + (20 - saldo).toFixed(2).replace('.',',') + ' para sacar';
-  localStorage.setItem('saldo', saldo);
+  document.getElementById('pontos').innerText = pontos;
+  document.getElementById('nivel').innerText = "Nível " + nivelAtual() + " - " + nomeNivel();
+  let resto = pontos % 100;
+  document.getElementById('progresso').style.width = resto + "%";
+  document.getElementById('falta').innerText = "Faltam " + (100 - resto) + " pontos pro próximo nível";
+  document.getElementById('porClique').innerText = "+" + porClique + " por clique";
+  document.getElementById('totalCliques').innerText = "Total de cliques: " + cliques;
+  let maior = parseInt(localStorage.getItem('maiorNivel') || 1);
+  if(nivelAtual() > maior){ maior = nivelAtual(); localStorage.setItem('maiorNivel', maior); }
+  document.getElementById('recorde').innerText = "Maior nível: " + maior;
+  localStorage.setItem('pontos', pontos);
+  localStorage.setItem('porClique', porClique);
+  localStorage.setItem('cliques', cliques);
 }
-function ganhar(){ saldo += 1; atualizar(); document.getElementById('msg').innerText = 'Você ganhou R$ 1! 🎉'; }
-function convidar(){ saldo += 20; atualizar(); navigator.clipboard.writeText(window.location.href); document.getElementById('msg').innerText = 'Link copiado! Manda pros amigos! 📲'; }
-function sacar(){
-  if(saldo < 20){ document.getElementById('msg').innerText = 'Você precisa de no mínimo R$ 20 para sacar.'; return; }
-  let pix = document.getElementById('pix').value;
-  if(!pix){ document.getElementById('msg').innerText = 'Digite sua chave Pix primeiro!'; return; }
-  document.getElementById('msg').innerText = 'Saque de R$ ' + saldo.toFixed(2) + ' solicitado! (Simulação do jogo)';
-  saldo = 0; atualizar();
+function clicar(){ pontos += porClique; cliques++; atualizar(); }
+function comprar(tipo){
+  if(tipo==1 && pontos>=50){ pontos-=50; porClique+=1; }
+  if(tipo==2 && pontos>=200){ pontos-=200; porClique+=5; }
+  if(tipo==3 && pontos>=1000){ pontos-=1000; porClique+=20; }
+  atualizar();
 }
 atualizar();
 </script>
