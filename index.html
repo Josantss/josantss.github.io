@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jogo da Memória - Suba de Nível!</title>
+<title>Jogo da Memória - Com Tempo e Ranking!</title>
 <style>
   body { font-family: Arial; text-align: center; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; margin: 0; padding: 12px; min-height: 100vh; }
   .card-box { background: white; color: #333; padding: 16px; border-radius: 20px; max-width: 520px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   h1 { color: #6a11cb; margin: 5px; font-size: 24px; }
   #nivelBox { background: linear-gradient(90deg, #ffd700, #ff6b00); color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 19px; margin: 10px 0; }
+  #tempoBox { background: #ff1744; color: white; padding: 10px; border-radius: 12px; font-weight: bold; font-size: 22px; margin: 5px 0; }
+  #tempoBox.quase { background: #d50000; animation: pisca 0.5s infinite; }
+  @keyframes pisca { 50% { opacity: 0.6; } }
   #barra { background: #eee; height: 14px; border-radius: 10px; overflow: hidden; margin: 8px 0; }
   #progresso { background: linear-gradient(90deg, #00e676, #ffd700); height: 100%; width: 0%; transition: 0.4s; }
   #info { display: flex; justify-content: space-between; font-weight: bold; margin: 10px 0; font-size: 15px; background: #f0f0ff; padding: 10px; border-radius: 10px; }
@@ -19,106 +22,24 @@
   .carta.acertou { background: #00e676; border: 2px solid #00aa55; }
   button.btn { background: #6a11cb; color: white; border: none; padding: 13px; border-radius: 12px; font-size: 16px; cursor: pointer; margin: 6px 0; width: 100%; font-weight: bold; }
   #msg { font-size: 18px; font-weight: bold; color: #00aa55; min-height: 26px; margin: 8px 0; }
+  #ranking { background: #fff9c4; border: 2px solid #ffd700; border-radius: 12px; padding: 12px; margin-top: 12px; text-align: left; }
+  #ranking h3 { margin: 0 0 8px; text-align: center; color: #ff6b00; }
+  .rank-item { display: flex; justify-content: space-between; padding: 6px; background: white; margin: 3px 0; border-radius: 8px; font-weight: bold; }
+  .rank-item.primeiro { background: #ffd700; }
 </style>
 </head>
 <body>
 <div class="card-box">
   <h1>🧠 JOGO DA MEMÓRIA</h1>
   <div id="nivelBox">🏆 NÍVEL 1 - INICIANTE</div>
+  <div id="tempoBox">⏰ Tempo: <span id="tempo">120</span>s</div>
   <div id="barra"><div id="progresso"></div></div>
   <div id="info"><span>⭐ <span id="pontos">0</span></span><span>🎯 <span id="acertos">0</span>/<span id="total">12</span></span><span>👆 <span id="tentativas">0</span></span></div>
   <div id="msg">Vamos jogar! 🍀</div>
   <div id="grade"></div>
   <button class="btn" onclick="novoJogo()">🔄 Jogar de Novo</button>
   <button class="btn" style="background:#ff6b00" onclick="voltarNivel1()">↩️ Voltar pro Nível 1</button>
-  <p style="font-size:12px; color:#888">Zere o nível pra subir! Cada nível = +500 bônus!</p>
-</div>
 
-<script>
-let pontos = parseInt(localStorage.getItem('mem_pontos') || 0);
-let nivel = parseInt(localStorage.getItem('mem_nivel') || 1);
-let todosEmojis = ['🍕','🚀','⚽','🎮','🍩','🐶','🌟','❤️','🍦','🦁','🎸','🚗','🍎','🐱','🎲','🍔','🌈','🐷','🎧','🍓','🦋','🏀','🍿','🎯','🐼','🚁','🎹','🍇','🦄','💎','🍰','⚡','🐙','🎳','🍉','🚲'];
-let cartas = [];
-let primeira = null, segunda = null, travado = false, acertos = 0, tentativas = 0, totalPares = 12;
-
-function nomeNivel(n){
-  if(n==1) return "INICIANTE";
-  if(n==2) return "APRENDIZ";
-  if(n==3) return "PRO";
-  if(n==4) return "MESTRE";
-  if(n>=5) return "LENDA 👑";
-  return "MESTRE";
-}
-function paresDoNivel(n){
-  if(n==1) return 12;
-  if(n==2) return 18;
-  if(n>=3) return 24;
-  return 12;
-}
-function embaralhar(arr){ return arr.sort(()=>Math.random()-0.5); }
-function novoJogo(){
-  totalPares = paresDoNivel(nivel);
-  let emojis = todosEmojis.slice(0,totalPares);
-  cartas = embaralhar([...emojis, ...emojis]);
-  acertos = 0; tentativas = 0; primeira=null; segunda=null; travado=false;
-  document.getElementById('nivelBox').innerText = "🏆 NÍVEL " + nivel + " - " + nomeNivel(nivel);
-  document.getElementById('total').innerText = totalPares;
-  document.getElementById('acertos').innerText = 0;
-  document.getElementById('tentativas').innerText = 0;
-  document.getElementById('progresso').style.width = "0%";
-  document.getElementById('msg').innerText = nivel==1 ? "Nível 1 - 24 cartas!" : nivel==2 ? "Nível 2 - 36 cartas! Mais difícil! 🔥" : "Nível " + nivel + " - 48 cartas! Você é MESTRE! 👑";
-  if(totalPares==24) document.getElementById('grade').style.gridTemplateColumns = "repeat(8, 1fr)";
-  else document.getElementById('grade').style.gridTemplateColumns = "repeat(6, 1fr)";
-  render();
-}
-function voltarNivel1(){ nivel=1; localStorage.setItem('mem_nivel', nivel); novoJogo(); }
-function render(){
-  let grade = document.getElementById('grade');
-  grade.innerHTML = "";
-  document.getElementById('pontos').innerText = pontos;
-  cartas.forEach((emoji)=>{
-    let b = document.createElement('button');
-    b.className = 'carta'; b.innerText = '❓'; b.dataset.emoji = emoji;
-    b.onclick = ()=> virar(b);
-    grade.appendChild(b);
-  });
-}
-function virar(btn){
-  if(travado || btn.classList.contains('virada') || btn.classList.contains('acertou')) return;
-  btn.classList.add('virada'); btn.innerText = btn.dataset.emoji;
-  if(!primeira){ primeira = btn; return; }
-  segunda = btn; travado = true; tentativas++;
-  document.getElementById('tentativas').innerText = tentativas;
-  if(primeira.dataset.emoji === segunda.dataset.emoji){
-    setTimeout(()=>{
-      primeira.classList.add('acertou'); segunda.classList.add('acertou');
-      pontos += 50; acertos++;
-      document.getElementById('pontos').innerText = pontos;
-      document.getElementById('acertos').innerText = acertos;
-      document.getElementById('progresso').style.width = (acertos/totalPares*100) + "%";
-      document.getElementById('msg').innerText = "Acertou! +50! 🎉";
-      localStorage.setItem('mem_pontos', pontos);
-      primeira=null; segunda=null; travado=false;
-      if(acertos === totalPares){
-        pontos += 500;
-        nivel++;
-        localStorage.setItem('mem_pontos', pontos);
-        localStorage.setItem('mem_nivel', nivel);
-        document.getElementById('pontos').innerText = pontos;
-        document.getElementById('msg').innerText = "🏆 VOCÊ SUBIU DE NÍVEL! +500 BÔNUS! Agora você é NÍVEL " + nivel + "!";
-        setTimeout(()=>{ alert("🎉 PARABÉNS! Você subiu para o NÍVEL " + nivel + " - " + nomeNivel(nivel) + "! +500 pontos de bônus!"); novoJogo(); }, 800);
-      }
-    }, 400);
-  } else {
-    setTimeout(()=>{
-      primeira.classList.remove('virada'); primeira.innerText='❓';
-      segunda.classList.remove('virada'); segunda.innerText='❓';
-      primeira=null; segunda=null; travado=false;
-      document.getElementById('msg').innerText = "Errou! Tenta de novo! 😅";
-    }, 700);
-  }
-}
-novoJogo();
-</script>
-</body>
-</html>
+  <div id="ranking">
+    <h3>🏅 TOP 5 MELHORES JOGADORES</h3>
+    <div id="listaRanking"></div>
