@@ -1,23 +1,107 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jogos Divertidos para Casais e Família | Josantss</title>
-<meta name="description" content="Site de jogos divertidos para casais, amigos e família. Jogue o Jogo da Memória, divirta-se e espalhe amor.">
+<title>Jogos Divertidos - Jogo da Memoria</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
-  body{background:#fff5f8;color:#333;line-height:1.7}
-  header{background:#d63384;color:white;padding:30px 20px;text-align:center}
-  header h1{font-size:34px;margin-bottom:10px}
-  header p{color:#ffe4f1;max-width:700px;margin:0 auto}
-  .container{max-width:800px;margin:0 auto;padding:20px}
-  .box{background:white;padding:25px;border-radius:20px;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:20px}
-  h2{color:#d63384;margin-bottom:12px}
-  h3{color:#333;margin:15px 0 8px}
-  a.btn{display:inline-block;background:#d63384;color:white;text-decoration:none;padding:15px 32px;border-radius:25px;font-weight:bold;margin-top:15px;font-size:18px}
-  a.btn:hover{background:#b01e6b}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}
-  .card{background:#fff0f6;padding:18px;border-radius:15px;text-align:center}
-  .card span{font-size:35
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#fff5f8;text-align:center;padding:20px}
+h1{color:#d63384;font-size:30px;margin-bottom:5px}
+p{color:#666;margin-bottom:15px}
+.info{display:flex;justify-content:center;gap:15px;margin-bottom:15px;flex-wrap:wrap}
+.info div{background:white;padding:10px 18px;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-weight:bold;color:#d63384}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:420px;margin:0 auto}
+.card{aspect-ratio:1;background:white;border-radius:15px;box-shadow:0 3px 10px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;font-size:38px;cursor:pointer;transition:0.2s;border:3px solid #ffe4f1}
+.card:hover{transform:scale(1.05)}
+.card.open{background:#fff0f6;border-color:#d63384}
+.card.matched{background:#d4edda;border-color:#28a745;cursor:default}
+button{background:#d63384;color:white;border:none;padding:14px 30px;border-radius:25px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:20px}
+button:hover{background:#b01e6b}
+#msg{font-size:22px;color:#d63384;font-weight:bold;margin-top:20px;display:none}
+footer{margin-top:30px;font-size:13px;color:#888}
+footer a{color:#d63384;text-decoration:none;margin:0 8px}
+</style>
+</head>
+<body>
+<h1>💖 Jogo da Memoria 💖</h1>
+<p>Ache todos os pares iguais!</p>
+<div class="info">
+<div>Jogadas: <span id="moves">0</span></div>
+<div>Acertos: <span id="hits">0</span>/8</div>
+<div>Tempo: <span id="time">0s</span></div>
+</div>
+<div class="grid" id="grid"></div>
+<div id="msg">🎉 Parabens! Voce venceu! 🎉<br><span style="font-size:16px;color:#666">Voce tem uma memoria incrivel!</span></div>
+<button onclick="startGame()">Jogar Novamente 🔄</button>
+<footer>
+<br>
+<a href="privacidade.html">Politica de Privacidade</a>
+<br><br>© 2026 Josantss Jogos Divertidos - Feito com amor no Brasil
+</footer>
+<script>
+let emojis = ['❤️','❤️','⭐','⭐','🌸','🌸','🍓','🍓','🐱','🐱','🦋','🦋','🍕','🍕','🎮','🎮'];
+let firstCard = null;
+let lock = false;
+let moves = 0;
+let hits = 0;
+let seconds = 0;
+let timer = null;
+let started = false;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function startGame(){
+  let grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  document.getElementById('msg').style.display = 'none';
+  moves = 0; hits = 0; seconds = 0; started = false;
+  clearInterval(timer); timer = null;
+  document.getElementById('moves').innerText = '0';
+  document.getElementById('hits').innerText = '0';
+  document.getElementById('time').innerText = '0s';
+  firstCard = null; lock = false;
+  let cards = shuffle([...emojis]);
+  cards.forEach(function(emoji){
+    let div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.emoji = emoji;
+    div.innerText = '❓';
+    div.onclick = function(){ flip(div); };
+    grid.appendChild(div);
+  });
+}
+
+function flip(card){
+  if(lock || card.classList.contains('open') || card.classList.contains('matched')) return;
+  if(!started){ started = true; timer = setInterval(function(){ seconds++; document.getElementById('time').innerText = seconds + 's'; },1000); }
+  card.classList.add('open');
+  card.innerText = card.dataset.emoji;
+  if(!firstCard){ firstCard = card; return; }
+  moves++;
+  document.getElementById('moves').innerText = moves;
+  if(firstCard.dataset.emoji === card.dataset.emoji){
+    firstCard.classList.add('matched');
+    card.classList.add('matched');
+    firstCard = null;
+    hits++;
+    document.getElementById('hits').innerText = hits;
+    if(hits === 8){
+      clearInterval(timer);
+      document.getElementById('msg').style.display = 'block';
+    }
+  } else {
+    lock = true;
+    let f = firstCard;
+    firstCard = null;
+    setTimeout(function(){
+      f.classList.remove('open'); f.innerText = '❓';
+      card.classList.remove('open'); card.innerText = '❓';
+      lock = false;
+    },800);
+  }
+}
+startGame();
+</script>
+</body>
+</html>
