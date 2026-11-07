@@ -3,78 +3,122 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Click Master - Jogue de Verdade!</title>
+<title>Jogo da Memória - Suba de Nível!</title>
 <style>
-  body { font-family: Arial; text-align: center; background: #1a1a2e; color: white; margin: 0; padding: 20px; }
-  .card { background: #16213e; padding: 20px; border-radius: 20px; max-width: 400px; margin: 0 auto; }
-  h1 { color: #ffd700; }
-  #pontos { font-size: 48px; font-weight: bold; color: #00ff88; }
-  #nivel { font-size: 20px; color: #ffd700; }
-  #barra { background: #333; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-  #progresso { background: linear-gradient(90deg, #00ff88, #ffd700); height: 100%; width: 0%; transition: 0.3s; }
-  #btnClick { width: 180px; height: 180px; border-radius: 50%; border: none; background: radial-gradient(circle, #ffd700, #ff6b00); font-size: 60px; cursor: pointer; margin: 20px 0; box-shadow: 0 10px 0 #a34a00; }
-  #btnClick:active { transform: scale(0.95); box-shadow: 0 5px 0 #a34a00; }
-  .upgrade { background: #0f3460; border: 2px solid #00ff88; color: white; padding: 12px; border-radius: 12px; width: 100%; margin: 5px 0; cursor: pointer; font-size: 16px; }
-  .upgrade:disabled { opacity: 0.5; }
-  .ranking { background: #0f3460; padding: 10px; border-radius: 12px; margin-top: 15px; }
+  body { font-family: Arial; text-align: center; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; margin: 0; padding: 12px; min-height: 100vh; }
+  .card-box { background: white; color: #333; padding: 16px; border-radius: 20px; max-width: 520px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  h1 { color: #6a11cb; margin: 5px; font-size: 24px; }
+  #nivelBox { background: linear-gradient(90deg, #ffd700, #ff6b00); color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 19px; margin: 10px 0; }
+  #barra { background: #eee; height: 14px; border-radius: 10px; overflow: hidden; margin: 8px 0; }
+  #progresso { background: linear-gradient(90deg, #00e676, #ffd700); height: 100%; width: 0%; transition: 0.4s; }
+  #info { display: flex; justify-content: space-between; font-weight: bold; margin: 10px 0; font-size: 15px; background: #f0f0ff; padding: 10px; border-radius: 10px; }
+  #grade { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+  .carta { aspect-ratio: 1; background: #2575fc; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; border: none; transition: 0.2s; }
+  .carta:active { transform: scale(0.9); }
+  .carta.virada { background: #fff3cd; border: 2px solid #ffd700; }
+  .carta.acertou { background: #00e676; border: 2px solid #00aa55; }
+  button.btn { background: #6a11cb; color: white; border: none; padding: 13px; border-radius: 12px; font-size: 16px; cursor: pointer; margin: 6px 0; width: 100%; font-weight: bold; }
+  #msg { font-size: 18px; font-weight: bold; color: #00aa55; min-height: 26px; margin: 8px 0; }
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>🏆 CLICK MASTER</h1>
-  <div id="nivel">Nível 1 - Iniciante</div>
-  <div id="pontos">0</div>
-  <div>PONTOS</div>
+<div class="card-box">
+  <h1>🧠 JOGO DA MEMÓRIA</h1>
+  <div id="nivelBox">🏆 NÍVEL 1 - INICIANTE</div>
   <div id="barra"><div id="progresso"></div></div>
-  <div id="falta">Faltam 100 pontos pro próximo nível</div>
-
-  <button id="btnClick" onclick="clicar()">👆</button>
-  <div id="porClique">+1 por clique</div>
-
-  <button class="upgrade" id="up1" onclick="comprar(1)">⚡ Clique Duplo - 50 pontos<br><small>Ganha +1 por clique</small></button>
-  <button class="upgrade" id="up2" onclick="comprar(2)">🔥 Super Clique - 200 pontos<br><small>Ganha +5 por clique</small></button>
-  <button class="upgrade" id="up3" onclick="comprar(3)">💎 Clique Diamante - 1000 pontos<br><small>Ganha +20 por clique</small></button>
-
-  <div class="ranking">
-    <b>🏅 SEU RECORDE</b><br>
-    <span id="recorde">Maior nível: 1</span><br>
-    <span id="totalCliques">Total de cliques: 0</span>
-  </div>
-  <p style="font-size:12px; opacity:0.7">Jogue, suba de nível e seja o mestre do clique!</p>
+  <div id="info"><span>⭐ <span id="pontos">0</span></span><span>🎯 <span id="acertos">0</span>/<span id="total">12</span></span><span>👆 <span id="tentativas">0</span></span></div>
+  <div id="msg">Vamos jogar! 🍀</div>
+  <div id="grade"></div>
+  <button class="btn" onclick="novoJogo()">🔄 Jogar de Novo</button>
+  <button class="btn" style="background:#ff6b00" onclick="voltarNivel1()">↩️ Voltar pro Nível 1</button>
+  <p style="font-size:12px; color:#888">Zere o nível pra subir! Cada nível = +500 bônus!</p>
 </div>
 
 <script>
-let pontos = parseInt(localStorage.getItem('pontos') || 0);
-let porClique = parseInt(localStorage.getItem('porClique') || 1);
-let cliques = parseInt(localStorage.getItem('cliques') || 0);
-let niveis = ["Iniciante","Aprendiz","Pro","Mestre","Lenda","Click Master"];
+let pontos = parseInt(localStorage.getItem('mem_pontos') || 0);
+let nivel = parseInt(localStorage.getItem('mem_nivel') || 1);
+let todosEmojis = ['🍕','🚀','⚽','🎮','🍩','🐶','🌟','❤️','🍦','🦁','🎸','🚗','🍎','🐱','🎲','🍔','🌈','🐷','🎧','🍓','🦋','🏀','🍿','🎯','🐼','🚁','🎹','🍇','🦄','💎','🍰','⚡','🐙','🎳','🍉','🚲'];
+let cartas = [];
+let primeira = null, segunda = null, travado = false, acertos = 0, tentativas = 0, totalPares = 12;
 
-function nivelAtual(){ return Math.floor(pontos/100)+1; }
-function nomeNivel(){ let n=nivelAtual(); if(n>6) return "Click Master 👑"; return niveis[Math.min(n-1,5)]; }
-
-function atualizar(){
+function nomeNivel(n){
+  if(n==1) return "INICIANTE";
+  if(n==2) return "APRENDIZ";
+  if(n==3) return "PRO";
+  if(n==4) return "MESTRE";
+  if(n>=5) return "LENDA 👑";
+  return "MESTRE";
+}
+function paresDoNivel(n){
+  if(n==1) return 12;
+  if(n==2) return 18;
+  if(n>=3) return 24;
+  return 12;
+}
+function embaralhar(arr){ return arr.sort(()=>Math.random()-0.5); }
+function novoJogo(){
+  totalPares = paresDoNivel(nivel);
+  let emojis = todosEmojis.slice(0,totalPares);
+  cartas = embaralhar([...emojis, ...emojis]);
+  acertos = 0; tentativas = 0; primeira=null; segunda=null; travado=false;
+  document.getElementById('nivelBox').innerText = "🏆 NÍVEL " + nivel + " - " + nomeNivel(nivel);
+  document.getElementById('total').innerText = totalPares;
+  document.getElementById('acertos').innerText = 0;
+  document.getElementById('tentativas').innerText = 0;
+  document.getElementById('progresso').style.width = "0%";
+  document.getElementById('msg').innerText = nivel==1 ? "Nível 1 - 24 cartas!" : nivel==2 ? "Nível 2 - 36 cartas! Mais difícil! 🔥" : "Nível " + nivel + " - 48 cartas! Você é MESTRE! 👑";
+  if(totalPares==24) document.getElementById('grade').style.gridTemplateColumns = "repeat(8, 1fr)";
+  else document.getElementById('grade').style.gridTemplateColumns = "repeat(6, 1fr)";
+  render();
+}
+function voltarNivel1(){ nivel=1; localStorage.setItem('mem_nivel', nivel); novoJogo(); }
+function render(){
+  let grade = document.getElementById('grade');
+  grade.innerHTML = "";
   document.getElementById('pontos').innerText = pontos;
-  document.getElementById('nivel').innerText = "Nível " + nivelAtual() + " - " + nomeNivel();
-  let resto = pontos % 100;
-  document.getElementById('progresso').style.width = resto + "%";
-  document.getElementById('falta').innerText = "Faltam " + (100 - resto) + " pontos pro próximo nível";
-  document.getElementById('porClique').innerText = "+" + porClique + " por clique";
-  document.getElementById('totalCliques').innerText = "Total de cliques: " + cliques;
-  let maior = parseInt(localStorage.getItem('maiorNivel') || 1);
-  if(nivelAtual() > maior){ maior = nivelAtual(); localStorage.setItem('maiorNivel', maior); }
-  document.getElementById('recorde').innerText = "Maior nível: " + maior;
-  localStorage.setItem('pontos', pontos);
-  localStorage.setItem('porClique', porClique);
-  localStorage.setItem('cliques', cliques);
+  cartas.forEach((emoji)=>{
+    let b = document.createElement('button');
+    b.className = 'carta'; b.innerText = '❓'; b.dataset.emoji = emoji;
+    b.onclick = ()=> virar(b);
+    grade.appendChild(b);
+  });
 }
-function clicar(){ pontos += porClique; cliques++; atualizar(); }
-function comprar(tipo){
-  if(tipo==1 && pontos>=50){ pontos-=50; porClique+=1; }
-  if(tipo==2 && pontos>=200){ pontos-=200; porClique+=5; }
-  if(tipo==3 && pontos>=1000){ pontos-=1000; porClique+=20; }
-  atualizar();
+function virar(btn){
+  if(travado || btn.classList.contains('virada') || btn.classList.contains('acertou')) return;
+  btn.classList.add('virada'); btn.innerText = btn.dataset.emoji;
+  if(!primeira){ primeira = btn; return; }
+  segunda = btn; travado = true; tentativas++;
+  document.getElementById('tentativas').innerText = tentativas;
+  if(primeira.dataset.emoji === segunda.dataset.emoji){
+    setTimeout(()=>{
+      primeira.classList.add('acertou'); segunda.classList.add('acertou');
+      pontos += 50; acertos++;
+      document.getElementById('pontos').innerText = pontos;
+      document.getElementById('acertos').innerText = acertos;
+      document.getElementById('progresso').style.width = (acertos/totalPares*100) + "%";
+      document.getElementById('msg').innerText = "Acertou! +50! 🎉";
+      localStorage.setItem('mem_pontos', pontos);
+      primeira=null; segunda=null; travado=false;
+      if(acertos === totalPares){
+        pontos += 500;
+        nivel++;
+        localStorage.setItem('mem_pontos', pontos);
+        localStorage.setItem('mem_nivel', nivel);
+        document.getElementById('pontos').innerText = pontos;
+        document.getElementById('msg').innerText = "🏆 VOCÊ SUBIU DE NÍVEL! +500 BÔNUS! Agora você é NÍVEL " + nivel + "!";
+        setTimeout(()=>{ alert("🎉 PARABÉNS! Você subiu para o NÍVEL " + nivel + " - " + nomeNivel(nivel) + "! +500 pontos de bônus!"); novoJogo(); }, 800);
+      }
+    }, 400);
+  } else {
+    setTimeout(()=>{
+      primeira.classList.remove('virada'); primeira.innerText='❓';
+      segunda.classList.remove('virada'); segunda.innerText='❓';
+      primeira=null; segunda=null; travado=false;
+      document.getElementById('msg').innerText = "Errou! Tenta de novo! 😅";
+    }, 700);
+  }
 }
-atualizar();
+novoJogo();
 </script>
 </body>
 </html>
